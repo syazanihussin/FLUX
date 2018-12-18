@@ -1,0 +1,3 @@
+/model/content_embedding_matrix.npy
+/model/stance_model.h5
+/model/stance_embedding_matrix.npy
