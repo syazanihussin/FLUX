@@ -154,7 +154,7 @@ class Models:
 
         merged = keras.layers.concatenate([gru_heads, gru_arts])
         linear = Dense(mlp_unit, activation='tanh')(merged)
-        predictions = Dense(2, activation='softmax', use_bias=True)(linear)
+        predictions = Dense(4, activation='softmax', use_bias=True)(linear)
 
         model = Model(inputs=[input_heads, input_arts], outputs=[predictions])
 
@@ -165,7 +165,7 @@ class Models:
         print(model.summary())
 
         # fit the model
-        model.fit([heads_train_x, arts_train_x], [train_y], validation_data=([heads_test_x, arts_test_x], [test_y]), epochs=2, verbose=1)
+        model.fit([heads_train_x, arts_train_x], [train_y], validation_data=([heads_test_x, arts_test_x], [test_y]), epochs=10, verbose=1)
 
         # display confusion matrix graph showing TP, FN, FP, TN
         self.show_confusion_matrix(model, [heads_train_x, arts_train_x], [heads_test_x, arts_test_x], train_y, test_y)
@@ -192,7 +192,8 @@ class Models:
         test_cm = confusion_matrix(decoded_test_y, converted_predicted_test)
 
         # Plot non-normalized confusion matrix
-        label = ['Fake', 'Real']
+        #label = ['Fake', 'Real']
+        label = ['tidak setuju', 'berkaitan', 'setuju', 'tidak berkaitan']
         np.set_printoptions(precision=2)
 
         plt.figure()
@@ -212,13 +213,21 @@ class Models:
         converted_prediction = []
 
         for probability in prediction:
-            fake_prob = probability[0]
+            '''fake_prob = probability[0]
             real_prob = probability[1]
 
             if(fake_prob > real_prob):
                 converted_prediction.append(0)
             elif(real_prob > fake_prob):
+                converted_prediction.append(1)'''
+            if probability[0] == max(probability):
+                converted_prediction.append(0)
+            elif probability[1] == max(probability):
                 converted_prediction.append(1)
+            elif probability[2] == max(probability):
+                converted_prediction.append(2)
+            elif probability[3] == max(probability):
+                converted_prediction.append(3)
 
         return converted_prediction
 

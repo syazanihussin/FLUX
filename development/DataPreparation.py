@@ -19,7 +19,8 @@ class DataPreparation():
 
     def clean_data(self, data, loop):
         for i in range(loop):
-            data.loc[i] = re.sub(r'[^\w\s]', '', data.loc[i].lower())
+            data.loc[i] = ' '.join(data.loc[i].split('-'))
+            data.loc[i] = re.sub(r'[^\w\s]', ' ', data.loc[i].lower())
 
 
     def create_data_label(self, size):
@@ -38,7 +39,7 @@ class DataPreparation():
         # label encode the target variable
         encoder = LabelEncoder()
         label = encoder.fit_transform(label)
-        encoded_label = to_categorical(label, num_classes=2)
+        encoded_label = to_categorical(label, num_classes=4)
 
         return encoded_label
 
@@ -84,7 +85,7 @@ class DataPreparation():
         label = self.create_data_label(size=500)
 
         # add column label in dataDF
-        dataDF['label'] = pandas.Series(label, index=dataDF.index)
+        dataDF['label'] = pandas.DataFrame(label, index=dataDF.index)
 
         # clean and lowercase data in dataDF
         self.clean_data(dataDF['penyataan'], loop=1000)
