@@ -1,6 +1,6 @@
-from development.DataPreparation import DataPreparation
-from development.FeatureEngineering import FeatureEngineering
-from development.Models import Models
+from development.A_DataPreparation import DataPreparation
+from development.A_FeatureEngineering import FeatureEngineering
+from development.A_Models import Models
 
 
 data_preparation = DataPreparation()
@@ -17,8 +17,8 @@ vocabulary_size, embedding_matrix, tokenizer = feature_engineering.prepare_embed
                                                                                      tokenizer_dir='..\model\content_word2vec_tokenizer.pickle',
                                                                                      embedding_matrix_dir='..\model\content_embedding_matrix.npy')
 
-train_x_w2v = feature_engineering.tokenize_vectorize(tokenizer, data=train_x, max_length=100)
-test_x_w2v = feature_engineering.tokenize_vectorize(tokenizer, data=test_x, max_length=100)
+train_x = feature_engineering.tokenize_vectorize(tokenizer, data=train_x, max_length=100)
+test_x = feature_engineering.tokenize_vectorize(tokenizer, data=test_x, max_length=100)
 
 '''
 print('1. MODEL CNN-RNN ADOPTED : WORD2VEC')
@@ -62,12 +62,12 @@ model.train_model(input_type='embedding', enable_cnn=True, model_type='gru', ena
                   test_x=test_x, test_y=test_y, vocab_size=vocabulary_size, embedding_matrix=embedding_matrix, many_output=False,
                   backwards=False)
 
-
+'''
 print('8. MODEL CNN-GRU ADOPTED BACKWARD: WORD2VEC ')
 model.train_model(input_type='embedding', enable_cnn=True, model_type='gru', enable_flatten=True, train_x=train_x, train_y=train_y,
                   test_x=test_x, test_y=test_y, vocab_size=vocabulary_size, embedding_matrix=embedding_matrix, many_output=True,
                   backwards=True)
-
+'''
 
 print('9. MODEL CNN-RNN : WORD2VEC')
 model.train_model(input_type='embedding', enable_cnn=True, model_type='rnn', enable_flatten=False, train_x=train_x, train_y=train_y,
@@ -197,7 +197,7 @@ model.train_model(input_type='embedding', enable_cnn=False, model_type='lstm', e
                   test_x=test_x, test_y=test_y, vocab_size=vocabulary_size, embedding_matrix=embedding_matrix, many_output=True,
                   backwards=True, forget_bias=False)
 
-
+'''
 print('31. MODEL GRU : WORD2VEC')
 model.train_model(input_type='embedding', enable_cnn=False, model_type='gru', enable_flatten=False, train_x=train_x, train_y=train_y,
                   test_x=test_x, test_y=test_y, vocab_size=vocabulary_size, embedding_matrix=embedding_matrix, many_output=False,
@@ -225,7 +225,7 @@ print('35. MODEL GRU MANY BACKWARD : WORD2VEC')
 model.train_model(input_type='embedding', enable_cnn=False, model_type='gru', enable_flatten=True, train_x=train_x, train_y=train_y,
                   test_x=test_x, test_y=test_y, vocab_size=vocabulary_size, embedding_matrix=embedding_matrix, many_output=True,
                   backwards=True)
-'''
+
 
 
 

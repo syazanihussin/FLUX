@@ -31,7 +31,7 @@ class Models:
 
 
     def build_cnn_layer(self, model, filters, window_size, bias):
-        model.add(Conv1D(filters=filters, kernel_size=window_size, padding='valid', activation='relu', use_bias=bias))
+        model.add(Conv1D(filters=filters, kernel_size=window_size, padding='same', activation='relu', use_bias=bias))
         model.add(MaxPooling1D(pool_size=window_size, padding='valid'))
 
 
@@ -69,7 +69,7 @@ class Models:
 
     def train_model(self, input_type, enable_cnn, model_type, enable_flatten, train_x, train_y, test_x, test_y, epoch=10, batch=32,
                     vocab_size=None, input_length=100, embedding_dim=300, embedding_matrix=None, embedding_dropout=0.2, trainable=False,
-                    filters=100, window_size=4, cnn_bias=True, recurrent_units=100, recurrent_bias=True, kernel_constraint=None,
+                    filters=100, window_size=4, cnn_bias=True, recurrent_units=80, recurrent_bias=True, kernel_constraint=None,
                     recurrent_constraint=None, dropout=0.0, recurrent_dropout=0.0, many_output=None, backwards=None, softmax_bias=True,
                     forget_bias=None, save=False, file_name=None):
 
@@ -109,17 +109,16 @@ class Models:
         model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['acc'])
 
         #callbacks = [TensorBoard(log_dir='..\logs\{}'.format(time()), histogram_freq=1, write_graph=True, write_images=True)]callbacks=callbacks,
-
         #CSVLogger('..\result\result3.csv', append=True), ModelCheckpoint('..\model\weights.{epoch:02d}-{val_acc:.4f}.h5', monitor='val_acc')
 
         # summarize the model
         print(model.summary())
 
         # fit the model
-        model.fit(train_x, train_y, validation_data=(test_x, test_y), epochs=epoch, batch_size=batch, verbose=1)
+        #model.fit(train_x, train_y, validation_data=(test_x, test_y), epochs=epoch, batch_size=batch, verbose=1)
 
         # display confusion matrix graph showing TP, FN, FP, TN
-        self.show_confusion_matrix(model, train_x, test_x, train_y, test_y)
+        #self.show_confusion_matrix(model, train_x, test_x, train_y, test_y)
 
         # save model as HDF5 file
         if(save == True):
@@ -297,7 +296,8 @@ class Models:
     def train_word2vec_model(self, dataDF, fname):
 
         # train word2vec model
-        model = Word2Vec(dataDF, size=300, workers=10, window=3, min_count=1, sg=1, iter=10)
+        model = Word2Vec(dataDF, size=300, workers=10, window=10, min_count=1, sg=1)
+        model.train(dataDF, total_examples=len(dataDF), epochs=10)
 
         # save model
         model.save(fname)
@@ -306,8 +306,9 @@ class Models:
 
     def train_fasttext_model(self, dataDF, fname):
 
-        # train word2vec model
-        model = FastText(dataDF, size=300, workers=10, window=3, min_count=1, sg=1, iter=10)
+        # train fasttext model
+        model = FastText(dataDF, size=300, workers=10, window=10, min_count=1, sg=1)
+        model.train(dataDF, total_examples=len(dataDF), epochs=10)
 
         # save model
         model.save(fname)

@@ -47,7 +47,7 @@ class DataPreparation():
     def prepare_data_frame(self):
 
         # load data from database
-        data = self.load_data_from_database('SELECT fake_news, real_news from news')
+        data = self.load_data_from_database('SELECT fake_news, real_news from news_table2')
 
         # merge fake_news and real_news into single dataframe alternately
         data = pandas.concat([data.fake_news, data.real_news]).sort_index(kind='merge')
@@ -56,7 +56,7 @@ class DataPreparation():
         data = data.reset_index(drop=True)
 
         # generate label for data in dataDF
-        label = self.create_data_label(size=239)
+        label = self.create_data_label(size=1820)
 
         # prepare dataframe with news and label
         dataDF = pandas.DataFrame()
@@ -64,7 +64,7 @@ class DataPreparation():
         dataDF['label'] = label
 
         # clean and lowercase data in dataDF
-        self.clean_data(dataDF['news'], loop=478)
+        self.clean_data(dataDF['news'], loop=3640)
 
         return dataDF
 
@@ -103,8 +103,8 @@ class DataPreparation():
         train_x, test_x, train_y, test_y = train_test_split(data_frame['news'], data_frame['label'], test_size=test_ratio, shuffle=False)
 
         # encode label
-        train_y = self.encode_label(train_y)
-        test_y = self.encode_label(test_y)
+        #train_y = self.encode_label(train_y)
+        #test_y = self.encode_label(test_y)
 
         return data_frame['news'], train_x, test_x, train_y, test_y
 
@@ -113,6 +113,60 @@ class DataPreparation():
 
         # get data_frame that stores data and label
         data_frame = self.prepare_stance_data_frame()
+        merged_data_frame = self.merge_data_frame(data_frame['penyataan'], data_frame['sumber'])
+
+        # split the dataset into training and validation datasets
+        train_penyataan, test_penyataan, train_sumber, test_sumber, train_y, test_y = train_test_split(data_frame['penyataan'], data_frame['sumber'], data_frame['label'], test_size=test_ratio, shuffle=False)
+
+        # encode label
+        #train_y = self.encode_label(train_y)
+        #test_y = self.encode_label(test_y)
+
+        return merged_data_frame['news'], train_penyataan, test_penyataan, train_sumber, test_sumber, train_y, test_y
+
+
+    def prepare_data_frame2(self):
+
+        # load data from csv file
+        dataDF = pandas.read_csv('../data/modified content (116).csv')
+
+        # clean and lowercase data in dataDF
+        self.clean_data(dataDF['penyataan'], loop=len(dataDF))
+
+        return dataDF
+
+
+    def prepare_stance_data_frame2(self):
+
+        # load data from csv file
+        dataDF = pandas.read_csv('../data/modified stance (510).csv')
+
+        # clean and lowercase data in dataDF
+        self.clean_data(dataDF['penyataan'], loop=len(dataDF))
+        self.clean_data(dataDF['sumber'], loop=len(dataDF))
+
+        return dataDF
+
+
+    def prepare_data_normal_split2(self, test_ratio):
+
+        # get data_frame that stores news and label
+        data_frame = self.prepare_data_frame2()
+
+        # split the dataset into training and validation datasets
+        train_x, test_x, train_y, test_y = train_test_split(data_frame['penyataan'], data_frame['label'], test_size=test_ratio, shuffle=False)
+
+        # encode label
+        train_y = self.encode_label(train_y)
+        test_y = self.encode_label(test_y)
+
+        return data_frame['penyataan'], train_x, test_x, train_y, test_y
+
+
+    def prepare_stance_data_normal_split2(self, test_ratio):
+
+        # get data_frame that stores data and label
+        data_frame = self.prepare_stance_data_frame2()
         merged_data_frame = self.merge_data_frame(data_frame['penyataan'], data_frame['sumber'])
 
         # split the dataset into training and validation datasets
@@ -131,5 +185,4 @@ class DataPreparation():
         dataDF = pandas.DataFrame()
         dataDF['news'] = data
         return dataDF
-
 

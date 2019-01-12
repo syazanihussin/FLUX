@@ -244,7 +244,6 @@ with open('result.csv', mode='w') as result_file:
 
 
 # load pickle saved data to try different logic
-'''
 pickle_out = open("title_searched_results_all.pickle","rb")
 title_searched_results_all = pickle.load(pickle_out)
 
@@ -290,6 +289,8 @@ fake_probability_list_all = pickle.load(pickle_out13)
 pickle_out14 = open("correct_prediction_model_all.pickle","rb")
 correct_prediction_model_all = pickle.load(pickle_out14)
 
+
+# LOGIC 1
 label_correct = []
 
 for i in range(len(news)):
@@ -300,12 +301,32 @@ for i in range(len(news)):
             if cosine_similar_all[i][j] == maximum:
                 label = label_list_all[i][j]
                 label_correct.append({i:label})
-print(label_correct)
-print(len(label_correct))
+
 count_correct = 0
 for i in range(len(news)):
     if label_correct[i] == labels[i]:
         count_correct += 1
 
 print(count_correct/len(news))
-'''
+
+
+# LOGIC 2
+label_correct = []
+label = ''
+
+for i in range(len(news)):
+    if real_count_all[i] >= 3:
+        label = 'Real'
+
+    elif fake_count_all[i] > real_count_all[i]:
+        label = 'Fake'
+
+    if fake_count_all[i] > 7:
+        if label == 'Real':
+            label = 'Fake'
+        elif label == 'Fake':
+            label = 'Real'
+
+    label_correct.append(label)
+
+
