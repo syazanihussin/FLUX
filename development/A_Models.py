@@ -71,7 +71,7 @@ class Models:
                     vocab_size=None, input_length=100, embedding_dim=300, embedding_matrix=None, embedding_dropout=0.2, trainable=False,
                     filters=100, window_size=4, cnn_bias=True, recurrent_units=80, recurrent_bias=True, kernel_constraint=None,
                     recurrent_constraint=None, dropout=0.0, recurrent_dropout=0.0, many_output=None, backwards=None, softmax_bias=True,
-                    forget_bias=None, save=False, file_name=None):
+                    forget_bias=None, save=False, file_name=None, mode=2):
 
         # build model
         model = Sequential()
@@ -115,10 +115,10 @@ class Models:
         print(model.summary())
 
         # fit the model
-        #model.fit(train_x, train_y, validation_data=(test_x, test_y), epochs=epoch, batch_size=batch, verbose=1)
+        model.fit(train_x, train_y, validation_data=(test_x, test_y), epochs=epoch, batch_size=batch, verbose=1)
 
         # display confusion matrix graph showing TP, FN, FP, TN
-        #self.show_confusion_matrix(model, train_x, test_x, train_y, test_y)
+        self.show_confusion_matrix(model, train_x, test_x, train_y, test_y, mode)
 
         # save model as HDF5 file
         if(save == True):
@@ -130,14 +130,14 @@ class Models:
 
     def train_stance_model(self, heads_len, article_len, vocab_size, embedding_matrix, heads_filters, heads_window_size, arts_filters,
                            arts_window_size, gru_arts_unit, gru_heads_unit, mlp_unit, heads_train_x, arts_train_x, train_y, heads_test_x,
-                           arts_test_x, test_y, save=False, file_name=None):
+                           arts_test_x, test_y, save=False, file_name=None, mode=2):
 
         #build model layers
         input_heads = Input(shape=(heads_len,))
         input_arts = Input(shape=(article_len,))
 
-        embedding_heads = Embedding(input_dim=vocab_size, input_length=heads_len, output_dim=300, weights=[embedding_matrix], trainable=False)(input_heads)
-        embedding_arts = Embedding(input_dim=vocab_size, input_length=article_len, output_dim=300, weights=[embedding_matrix], trainable=False)(input_arts)
+        embedding_heads = Embedding(input_dim=vocab_size, input_length=heads_len, output_dim=256, weights=[embedding_matrix], trainable=False)(input_heads)
+        embedding_arts = Embedding(input_dim=vocab_size, input_length=article_len, output_dim=256, weights=[embedding_matrix], trainable=False)(input_arts)
 
         dropout_heads = Dropout(0.2)(embedding_heads)
         dropout_arts = Dropout(0.2)(embedding_arts)
@@ -167,7 +167,7 @@ class Models:
         model.fit([heads_train_x, arts_train_x], [train_y], validation_data=([heads_test_x, arts_test_x], [test_y]), epochs=10, verbose=1)
 
         # display confusion matrix graph showing TP, FN, FP, TN
-        self.show_confusion_matrix(model, [heads_train_x, arts_train_x], [heads_test_x, arts_test_x], train_y, test_y)
+        self.show_confusion_matrix(model, [heads_train_x, arts_train_x], [heads_test_x, arts_test_x], train_y, test_y, mode)
 
         # save model as HDF5 file
         if(save == True):
@@ -177,22 +177,27 @@ class Models:
 
 
 
-    def show_confusion_matrix(self, model, train_x, test_x, train_y, test_y):
+    def show_confusion_matrix(self, model, train_x, test_x, train_y, test_y, mode):
 
         decoded_train_y, decoded_test_y = train_y.argmax(1), test_y.argmax(1)
 
         predicted_train = model.predict(train_x)
         predicted_test = model.predict(test_x)
 
-        converted_predicted_train = self.convert_proba_prediction_to_label(predicted_train)
-        converted_predicted_test = self.convert_proba_prediction_to_label(predicted_test)
+        converted_predicted_train = self.convert_proba_prediction_to_label(predicted_train, mode)
+        converted_predicted_test = self.convert_proba_prediction_to_label(predicted_test, mode)
 
         train_cm = confusion_matrix(decoded_train_y, converted_predicted_train)
         test_cm = confusion_matrix(decoded_test_y, converted_predicted_test)
 
         # Plot non-normalized confusion matrix
-        #label = ['Fake', 'Real']
-        label = ['tidak setuju', 'berkaitan', 'setuju', 'tidak berkaitan']
+        if mode==1:
+            label = ['Fake', 'Real']
+        elif mode==2:
+            label = ['palsu', 'benar']
+        elif mode==3:
+            label = ['tidak setuju', 'berkaitan', 'setuju', 'tidak berkaitan']
+
         np.set_printoptions(precision=2)
 
         plt.figure()
@@ -207,26 +212,26 @@ class Models:
 
 
 
-    def convert_proba_prediction_to_label(self, prediction):
+    def convert_proba_prediction_to_label(self, prediction, mode):
 
         converted_prediction = []
 
         for probability in prediction:
-            '''fake_prob = probability[0]
-            real_prob = probability[1]
+            if mode==1 or mode==2:
+                if probability[0] == max(probability):
+                    converted_prediction.append(0)
+                elif probability[1] == max(probability):
+                    converted_prediction.append(1)
 
-            if(fake_prob > real_prob):
-                converted_prediction.append(0)
-            elif(real_prob > fake_prob):
-                converted_prediction.append(1)'''
-            if probability[0] == max(probability):
-                converted_prediction.append(0)
-            elif probability[1] == max(probability):
-                converted_prediction.append(1)
-            elif probability[2] == max(probability):
-                converted_prediction.append(2)
-            elif probability[3] == max(probability):
-                converted_prediction.append(3)
+            elif mode==3:
+                if probability[0] == max(probability):
+                    converted_prediction.append(0)
+                elif probability[1] == max(probability):
+                    converted_prediction.append(1)
+                elif probability[2] == max(probability):
+                    converted_prediction.append(2)
+                elif probability[3] == max(probability):
+                    converted_prediction.append(3)
 
         return converted_prediction
 

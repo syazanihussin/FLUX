@@ -2,7 +2,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from keras.preprocessing.text import Tokenizer, text_to_word_sequence
 from keras.preprocessing.sequence import pad_sequences
 from gensim.models import Word2Vec, FastText
-import pickle, numpy as np
+import pickle, numpy as np, malaya
+
 
 
 class FeatureEngineering:
@@ -135,6 +136,28 @@ class FeatureEngineering:
 
         # pad and truncate data to make sure the data comes in fixed size
         data_word2vec = pad_sequences(tokenizer.texts_to_sequences(data_temp), maxlen=max_length, padding='post', truncating='post', value=0)
+
+        return data_word2vec
+
+
+    def prepare_embedding_malaya(self):
+        embedded = malaya.malaya_word2vec(256)
+        return len(embedded['dictionary']), embedded['nce_weights'], embedded['dictionary']
+
+
+    def tokenize_vectorize_malaya(self, tokenizer, data, max_length):
+        data_temp = []
+
+        for sentence in data:
+            list = []
+            for word in sentence.split():
+                id = tokenizer.get(word)
+                if id is not None:
+                    list.append(id)
+            data_temp.append(list)
+
+        # pad and truncate data to make sure the data comes in fixed size
+        data_word2vec = pad_sequences(data_temp, maxlen=max_length, padding='post', truncating='post', value=0)
 
         return data_word2vec
 

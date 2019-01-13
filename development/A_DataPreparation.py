@@ -2,6 +2,7 @@ import mysql.connector, pandas, re
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
+import malaya
 
 
 class DataPreparation():
@@ -21,6 +22,11 @@ class DataPreparation():
         for i in range(loop):
             data.loc[i] = ' '.join(data.loc[i].split('-'))
             data.loc[i] = re.sub(r'[^\w\s]', ' ', data.loc[i].lower())
+            data.loc[i] = malaya.sastrawi_stemmer(data.loc[i])
+
+            for word in data.loc[i]:
+                if word.isdigit():
+                    data.loc[i].replace(word, malaya.num2word.to_cardinal(int(word)))
 
 
     def create_data_label(self, size):
@@ -34,12 +40,12 @@ class DataPreparation():
         return labels
 
 
-    def encode_label(self, label):
+    def encode_label(self, label, num_class):
 
         # label encode the target variable
         encoder = LabelEncoder()
         label = encoder.fit_transform(label)
-        encoded_label = to_categorical(label, num_classes=4)
+        encoded_label = to_categorical(label, num_classes=num_class)
 
         return encoded_label
 
@@ -103,8 +109,8 @@ class DataPreparation():
         train_x, test_x, train_y, test_y = train_test_split(data_frame['news'], data_frame['label'], test_size=test_ratio, shuffle=False)
 
         # encode label
-        #train_y = self.encode_label(train_y)
-        #test_y = self.encode_label(test_y)
+        train_y = self.encode_label(train_y, 2)
+        test_y = self.encode_label(test_y, 2)
 
         return data_frame['news'], train_x, test_x, train_y, test_y
 
@@ -119,8 +125,8 @@ class DataPreparation():
         train_penyataan, test_penyataan, train_sumber, test_sumber, train_y, test_y = train_test_split(data_frame['penyataan'], data_frame['sumber'], data_frame['label'], test_size=test_ratio, shuffle=False)
 
         # encode label
-        #train_y = self.encode_label(train_y)
-        #test_y = self.encode_label(test_y)
+        train_y = self.encode_label(train_y, 2)
+        test_y = self.encode_label(test_y, 2)
 
         return merged_data_frame['news'], train_penyataan, test_penyataan, train_sumber, test_sumber, train_y, test_y
 
@@ -157,8 +163,8 @@ class DataPreparation():
         train_x, test_x, train_y, test_y = train_test_split(data_frame['penyataan'], data_frame['label'], test_size=test_ratio, shuffle=False)
 
         # encode label
-        train_y = self.encode_label(train_y)
-        test_y = self.encode_label(test_y)
+        train_y = self.encode_label(train_y, 2)
+        test_y = self.encode_label(test_y, 2)
 
         return data_frame['penyataan'], train_x, test_x, train_y, test_y
 
@@ -173,8 +179,8 @@ class DataPreparation():
         train_penyataan, test_penyataan, train_sumber, test_sumber, train_y, test_y = train_test_split(data_frame['penyataan'], data_frame['sumber'], data_frame['label'], test_size=test_ratio, shuffle=False)
 
         # encode label
-        train_y = self.encode_label(train_y)
-        test_y = self.encode_label(test_y)
+        train_y = self.encode_label(train_y, 4)
+        test_y = self.encode_label(test_y, 4)
 
         return merged_data_frame['news'], train_penyataan, test_penyataan, train_sumber, test_sumber, train_y, test_y
 

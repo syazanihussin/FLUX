@@ -6,8 +6,9 @@ from sklearn.feature_selection import chi2
 from sklearn.feature_extraction.text import TfidfVectorizer
 import matplotlib.pyplot as plt
 import numpy as np
-import malaya
-import csv
+import malaya, csv, pandas
+from system import search
+
 
 
 ''' COUNT TOTAL VOCAB & AVERAGE LENGTH '''
@@ -212,3 +213,49 @@ with open('data500_csv.csv', mode='w', encoding='utf-8') as file:
 
 
 
+''' COUNT LABEL DISTRIBUTION '''
+
+content_data = pandas.read_csv('../data/content_csv.csv')
+stance_data = pandas.read_csv('../data/stance_csv.csv')
+
+
+print('RAW DATA')
+print(content_data[['penyataan', 'label']])
+print(stance_data[['penyataan','sumber', 'label']])
+
+count_palsu_s, count_benar_s, count_xberkaitan_s, count_berkaitan_s = 0,0,0,0
+
+
+for i in range(len(stance_data)):
+    print(i)
+    if(stance_data['label'].loc[i] == 'tidak setuju'):
+        count_palsu_s+=1
+    elif(stance_data['label'].loc[i] == 'setuju'):
+        count_benar_s+=1
+    elif(stance_data['label'].loc[i] == 'tidak berkaitan'):
+        count_xberkaitan_s+=1
+    elif(stance_data['label'].loc[i] == 'berkaitan'):
+        count_berkaitan_s+=1
+
+
+print(count_benar_s, count_palsu_s,count_berkaitan_s, count_xberkaitan_s)
+
+
+
+''' SEARCH RELATED NEWS '''
+
+searching_obj = search.Searching()
+
+with open('../data/sumber_csv.csv', mode='w', encoding='utf-8') as file:
+    file_writer = csv.writer(file, delimiter=',', lineterminator = '\n')
+
+    for i in range(len(scraped_content_data)):
+        searched_results = searching_obj.search_news(keyword=scraped_content_data[i])
+
+        for searched_data in searched_results:
+            print(searched_data['link'])
+            print(searched_data['title'])
+            print(searched_data['snippet'])
+            print()
+            key = i*2+1
+            file_writer.writerow([key, searched_data['title'], searched_data['snippet'], searched_data['link']])
