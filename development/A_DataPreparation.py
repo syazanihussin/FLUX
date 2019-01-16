@@ -22,7 +22,7 @@ class DataPreparation():
         for i in range(loop):
             data.loc[i] = ' '.join(data.loc[i].split('-'))
             data.loc[i] = re.sub(r'[^\w\s]', ' ', data.loc[i].lower())
-            data.loc[i] = malaya.sastrawi_stemmer(data.loc[i])
+            data.loc[i] = malaya.stem.sastrawi(data.loc[i])
 
             for word in data.loc[i]:
                 if word.isdigit():

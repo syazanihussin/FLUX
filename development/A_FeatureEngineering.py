@@ -141,7 +141,7 @@ class FeatureEngineering:
 
 
     def prepare_embedding_malaya(self):
-        embedded = malaya.malaya_word2vec(256)
+        embedded = malaya.word2vec.load(256)
         return len(embedded['dictionary']), embedded['nce_weights'], embedded['dictionary']
 
 
